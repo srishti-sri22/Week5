@@ -3,7 +3,8 @@ mod helper;
 use helper::secret_generation;
 mod models;
 use models::{Args, Commands};
-use num_traits::Zero;
+mod reconstruction;
+use reconstruction::{reconstruct_secret::reconstruct_secret};
 use secret_generation::{string_to_biguint, biguint_to_string};
 use num_bigint::BigUint;
 
@@ -42,7 +43,7 @@ fn main() {
         }
 
         Commands::Reconstruct { prime, shares } => {
-            let _p = BigUint::from(prime);
+            let p = BigUint::from(prime);
             let mut shares_vec = Vec::new();
 
             for s in shares.split(';') {
@@ -56,7 +57,7 @@ fn main() {
                 shares_vec.push((x, y));
             }
 
-            let secret_num = BigUint::zero();
+            let secret_num = reconstruct_secret(&shares_vec, &p);
             let secret_str = biguint_to_string(&secret_num);
 
             println!("{}", secret_str);

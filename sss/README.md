@@ -8,4 +8,6 @@ Now let's take the given string and convert it into bytes and then decimal and v
  - Step 3 : Now lets focus on making the function to make the polynomial. What what it will have is - a struct Polynomial , to store all the random generated coefficients for the computations.
  Next in the same, make a function to make the put the values of the coefficeints and then calculate the shares by putting the values of x for all the k number of shares to be able to put the values, and return them and print them.
 
+- Step 4 : Now we have made the shares and what i have also done is to print it in a cli suitable format to use it for the resconstruct command.
+Now for the reconstrut , first use lagrange interpolation , so that means should any shares at random, 
 
