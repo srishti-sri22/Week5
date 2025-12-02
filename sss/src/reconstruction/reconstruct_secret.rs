@@ -2,7 +2,7 @@ use num_bigint::BigUint;
 use super::lagrange::compute_lj_zero;
 
 pub fn reconstruct_secret(shares: &[(BigUint, BigUint)], prime: &BigUint) -> BigUint {
-    let mut secret = BigUint::from(0u32);
+    let mut secret = BigUint::from(0 as u32);
 
     for (j, (_, yj)) in shares.iter().enumerate() {
         let lj = compute_lj_zero(j, shares, prime);
@@ -10,5 +10,5 @@ pub fn reconstruct_secret(shares: &[(BigUint, BigUint)], prime: &BigUint) -> Big
         secret = (secret + term) % prime;
     }
 
-    secret
+    return secret;
 }
