@@ -41,7 +41,7 @@ fn main() {
         }
 
         Commands::Reconstruct { prime, shares } => {
-            let p = BigUint::from(prime);
+            let _p = BigUint::from(prime);
             let mut shares_vec = Vec::new();
 
             for s in shares.split(';') {

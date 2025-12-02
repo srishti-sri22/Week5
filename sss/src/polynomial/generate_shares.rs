@@ -17,5 +17,5 @@ pub fn generate_shares(
         shares.push((x, y));
     }
 
-    shares
+    return shares;
 }
