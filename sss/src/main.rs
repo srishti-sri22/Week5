@@ -1,5 +1,6 @@
 use clap::{Parser};
-mod secret_generation;
+mod helper;
+use helper::secret_generation;
 mod models;
 use models::{Args, Commands};
 use num_traits::Zero;
