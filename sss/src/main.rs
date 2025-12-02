@@ -60,7 +60,11 @@ fn main() {
             let secret_num = reconstruct_secret(&shares_vec, &p);
             let secret_str = biguint_to_string(&secret_num);
 
-            println!("{}", secret_str);
+            println!("\nGiven Shares");
+            for (i, (x, y)) in shares_vec.iter().enumerate() {
+                println!("Share {} -> x: {}, y: {}", i + 1, x, y);
+            }
+            println!("\nThe Reconstructed String is : {}", secret_str);
         }
     }
 }
