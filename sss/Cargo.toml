@@ -9,5 +9,4 @@ num-traits = "0.2"
 num-integer = "0.1"
 rand = { version = "0.8", features = ["std"] }
 clap = { version = "4", features = ["derive"] }
-serde = { version = "1.0", features = ["derive"] }     # optional, for JSON output
-serde_json = "1.0"     
+
