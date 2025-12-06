@@ -1,6 +1,3 @@
-// commands/mod.rs - Commands module declaration and dispatcher
-// This file routes commands to their respective handlers
-
 mod split;
 mod verify_secret;
 mod verify_share;
@@ -8,10 +5,6 @@ mod reconstruct;
 
 use crate::cli::Command;
 
-/// Execute the appropriate command based on user input
-///
-/// # Arguments
-/// * `cmd` - The command to execute (from CLI parsing)
 pub fn execute(cmd: Command) {
     match cmd {
         Command::Split { secret, n, k } => {

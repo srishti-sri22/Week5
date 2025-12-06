@@ -1,20 +1,8 @@
-// math/lagrange.rs - Lagrange Interpolation
-// This file implements Lagrange interpolation for reconstructing secrets
-
 use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{One, Zero};
 use super::gcd::extended_gcd;
 
-/// Reconstruct the secret using Lagrange interpolation
-/// Given k shares, we can reconstruct the polynomial's constant term (the secret)
-///
-/// # Arguments
-/// * `shares` - A vector of (x, y) coordinate pairs representing shares
-/// * `q` - The modulus for all operations
-///
-/// # Returns
-/// The reconstructed secret (the constant term of the polynomial)
 pub fn interpolate(shares: &[(BigUint, BigUint)], q: &BigUint) -> BigUint {
     let mut secret = BigInt::zero();
     let q_int = BigInt::from(q.clone());
