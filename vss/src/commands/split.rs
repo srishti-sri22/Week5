@@ -27,6 +27,12 @@ pub fn execute(secret: String, n: usize, k: usize) {
         coefficients.push(rng.gen_biguint(q.bits() as u64) % &q);
     }
 
+    println!("Debug - Coefficients:");
+for (i, coeff) in coefficients.iter().enumerate() {
+    println!("  a[{}] = {}", i, coeff);
+}
+println!();
+
     let commitments = feldman::generate_commitments(&coefficients, &g, &p);
 
     let mut shares = Vec::new();
@@ -46,7 +52,6 @@ pub fn execute(secret: String, n: usize, k: usize) {
     for (i, commitment) in commitments.iter().enumerate() {
         println!("C[{}] = {}", i, commitment);
     }
-    println!();
 
     let commitments_str: Vec<String> = commitments
         .iter()

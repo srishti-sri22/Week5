@@ -64,7 +64,7 @@ pub fn execute(share: String, commitments: String, verbose: bool) {
     }
 }
 
-fn verify_share_verbose(x: &BigUint,y: &BigUint,commitments: &[BigUint],g: &BigUint,p: &BigUint,_q: &BigUint,) {
+fn verify_share_verbose(x: &BigUint,y: &BigUint,commitments: &[BigUint],g: &BigUint,p: &BigUint,q: &BigUint,) {
     let left_side = g.modpow(y, p);
     println!("│  Left side:  g^y mod p");
     println!("{}^{} mod {}", g, y, p);
@@ -81,11 +81,10 @@ fn verify_share_verbose(x: &BigUint,y: &BigUint,commitments: &[BigUint],g: &BigU
         println!("│            C[{}]^(x^{}) mod p", j, j);
         println!("│            = {}^{} mod p", commitment, x_power);
         println!("│            = {}", term);
-        right_side = &right_side * &term;
+        right_side = (right_side * term) % p; 
         println!("│            Running product = {}", right_side);
-        x_power = &x_power * x;
+        x_power = x_power * x;
     }
-    right_side = right_side % p;
     
     println!(" Comparison:");
     println!("   Left  = {}", left_side);
