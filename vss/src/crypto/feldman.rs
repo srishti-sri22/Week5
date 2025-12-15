@@ -35,16 +35,13 @@ mod tests {
 
     #[test]
     fn test_verify_share_simple() {
-        // Simple test with small numbers
         let p = BigUint::from(23u32);
         let q = BigUint::from(11u32);
         let g = BigUint::from(2u32);
         
-        // Polynomial: f(x) = 5 + 3x (coefficients: [5, 3])
         let coeffs = vec![BigUint::from(5u32), BigUint::from(3u32)];
         let commitments = generate_commitments(&coeffs, &g, &p);
         
-        // Share at x=1: f(1) = 5 + 3*1 = 8 (mod 11)
         let x = BigUint::from(1u32);
         let y = BigUint::from(8u32);
         
@@ -53,16 +50,13 @@ mod tests {
     
     #[test]
     fn test_verify_share_larger_x() {
-        // Test with larger x value to ensure modular arithmetic works
         let p = BigUint::from(23u32);
         let q = BigUint::from(11u32);
         let g = BigUint::from(2u32);
         
-        // Polynomial: f(x) = 5 + 3x (coefficients: [5, 3])
         let coeffs = vec![BigUint::from(5u32), BigUint::from(3u32)];
         let commitments = generate_commitments(&coeffs, &g, &p);
         
-        // Share at x=7: f(7) = 5 + 3*7 = 26 ≡ 4 (mod 11)
         let x = BigUint::from(7u32);
         let y = BigUint::from(4u32);
         
@@ -71,16 +65,12 @@ mod tests {
     
     #[test]
     fn test_verify_share_invalid() {
-        // Test that invalid shares are detected
         let p = BigUint::from(23u32);
         let q = BigUint::from(11u32);
         let g = BigUint::from(2u32);
-        
-        // Polynomial: f(x) = 5 + 3x (coefficients: [5, 3])
-        let coeffs = vec![BigUint::from(5u32), BigUint::from(3u32)];
+                let coeffs = vec![BigUint::from(5u32), BigUint::from(3u32)];
         let commitments = generate_commitments(&coeffs, &g, &p);
         
-        // Invalid share: x=1, y=7 (should be 8)
         let x = BigUint::from(1u32);
         let y = BigUint::from(7u32);
         
