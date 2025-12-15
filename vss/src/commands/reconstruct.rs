@@ -13,16 +13,27 @@ pub fn execute(shares: String) {
                 eprintln!("Error: Each share must be in format 'x,y'");
                 std::process::exit(1);
             }
-            
-            let x = BigUint::parse_bytes(parts[0].as_bytes(), 10)
-                .expect("Failed to parse x coordinate");
-            let y = BigUint::parse_bytes(parts[1].as_bytes(), 10)
-                .expect("Failed to parse y coordinate");
-            
-            (x, y) //hm yaha tuple return krenge
+
+            let x = match BigUint::parse_bytes(parts[0].as_bytes(), 10) {
+                Some(val) => val,
+                None => {
+                    eprintln!("Error: Failed to parse x coordinate '{}'", parts[0]);
+                    std::process::exit(1);
+                }
+            };
+
+            let y = match BigUint::parse_bytes(parts[1].as_bytes(), 10) {
+                Some(val) => val,
+                None => {
+                    eprintln!("Error: Failed to parse y coordinate '{}'", parts[1]);
+                    std::process::exit(1);
+                }
+            };
+
+            (x, y)
         })
         .collect();
-    
+
     println!("Reconstruct Mode");
     println!("Shares provided: {}", share_list.len());
     println!();
@@ -33,9 +44,15 @@ pub fn execute(shares: String) {
     }
     println!();
 
-    let reconstructed = lagrange::interpolate(&share_list, &q);
-    
-    println!("Secret (number): {}", reconstructed);
+    let reconstructed = match lagrange::interpolate(&share_list, &q) {
+        Ok(val) => val,
+        Err(e) => {
+            eprintln!("Error: Failed to reconstruct secret: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    println!("Secret (number): {:?}", reconstructed);
 
     let secret_bytes = reconstructed.to_bytes_be();
     match String::from_utf8(secret_bytes.clone()) {

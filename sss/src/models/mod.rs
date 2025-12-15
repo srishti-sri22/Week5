@@ -8,8 +8,6 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands{
-
-    //command ke hisaab se split ya reconstruct krenge hm us secret ko, jo user cli mei batayega uske hisaab se
     Split{
         #[arg(short, long)]
      secret: String,

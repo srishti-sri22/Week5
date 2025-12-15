@@ -3,60 +3,59 @@ use num_integer::Integer;
 use num_traits::{One, Zero};
 use super::gcd::extended_gcd;
 
-pub fn interpolate(shares: &[(BigUint, BigUint)], q: &BigUint) -> BigUint {
+pub fn interpolate(shares: &[(BigUint, BigUint)], q: &BigUint) -> Result<BigUint, &'static str> {
+    if shares.is_empty() {
+        return Err("No shares provided for interpolation");
+    }
+
     let mut secret = BigInt::zero();
     let q_int = BigInt::from(q.clone());
-    
+
     println!("Starting Lagrange interpolation...");
-    
-    // For each share, compute its contribution to the secret
+
     for (i, (xi, yi)) in shares.iter().enumerate() {
         println!("\nProcessing share {}: x={}, y={}", i + 1, xi, yi);
-        
+
         let mut numerator = BigInt::one();
         let mut denominator = BigInt::one();
-        
-        // Compute the Lagrange basis polynomial at x=0
+
         for (j, (xj, _)) in shares.iter().enumerate() {
             if i != j {
-                // Numerator: product of all (0 - xj) = product of (-xj)
                 numerator = (numerator * BigInt::from(xj.clone())).mod_floor(&q_int);
-                
-                // Denominator: product of all (xi - xj)
                 let difference = (BigInt::from(xj.clone()) - BigInt::from(xi.clone()))
                     .mod_floor(&q_int);
                 denominator = (denominator * difference).mod_floor(&q_int);
             }
         }
-        
+
         println!("  numerator = {}", numerator);
         println!("  denominator = {}", denominator);
-        
-        // Find the modular inverse of the denominator
+
         let (gcd, inverse, _) = extended_gcd(denominator.clone(), q_int.clone());
         println!("  gcd = {}", gcd);
-        
+
         if gcd != BigInt::one() {
             eprintln!("  ERROR: gcd is not 1, cannot compute modular inverse!");
-            continue;
+            return Err("GCD of denominator and modulus is not 1");
         }
-        
+
         let denominator_inv = inverse.mod_floor(&q_int);
         println!("  denominator_inv = {}", denominator_inv);
-        
-        // Compute the Lagrange coefficient
+
         let lagrange_coeff = (numerator * denominator_inv).mod_floor(&q_int);
         println!("  lagrange_coeff = {}", lagrange_coeff);
-        
-        // Add this share's contribution: yi * lagrange_coeff
+
         let term = (BigInt::from(yi.clone()) * lagrange_coeff).mod_floor(&q_int);
         println!("  term = {}", term);
-        
+
         secret = (secret + term).mod_floor(&q_int);
         println!("  running secret = {}", secret);
     }
-    
+
     println!("\nFinal secret: {}", secret);
-    
-    secret.to_biguint().expect("Secret should be positive")
+
+    match secret.to_biguint() {
+        Some(val) => Ok(val),
+        None => Err("Secret is negative, cannot convert to BigUint"),
+    }
 }

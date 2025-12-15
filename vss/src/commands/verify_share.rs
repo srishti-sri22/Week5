@@ -7,49 +7,74 @@ pub fn execute(share: String, commitments: String, verbose: bool) {
 
     let share_list: Vec<(BigUint, BigUint)> = share
         .split(';')
-        .map(|s| {
+        .filter_map(|s| {
             let parts: Vec<&str> = s.trim().split(',').collect();
             if parts.len() != 2 {
-                eprintln!("Error: Each share must be in format 'x,y'");
-                eprintln!("Got: '{}'", s);
-                std::process::exit(1);
+                eprintln!("Error: Each share must be in format 'x,y'. Got '{}'", s);
+                return None;
             }
-            
-            let x = BigUint::parse_bytes(parts[0].trim().as_bytes(), 10)
-                .expect("Failed to parse x coordinate");
-            let y = BigUint::parse_bytes(parts[1].trim().as_bytes(), 10)
-                .expect("Failed to parse y coordinate");
-            
-            (x, y)
+
+            let x = match BigUint::parse_bytes(parts[0].trim().as_bytes(), 10) {
+                Some(val) => val,
+                None => {
+                    eprintln!("Error: Failed to parse x coordinate '{}'", parts[0]);
+                    return None;
+                }
+            };
+
+            let y = match BigUint::parse_bytes(parts[1].trim().as_bytes(), 10) {
+                Some(val) => val,
+                None => {
+                    eprintln!("Error: Failed to parse y coordinate '{}'", parts[1]);
+                    return None;
+                }
+            };
+
+            Some((x, y))
         })
         .collect();
 
+    if share_list.is_empty() {
+        eprintln!("Error: No valid shares provided. Exiting.");
+        return;
+    }
+
     let commitment_list: Vec<BigUint> = commitments
         .split(',')
-        .map(|s| {
-            BigUint::parse_bytes(s.trim().as_bytes(), 10)
-                .expect("Failed to parse commitment")
+        .filter_map(|s| {
+            match BigUint::parse_bytes(s.trim().as_bytes(), 10) {
+                Some(val) => Some(val),
+                None => {
+                    eprintln!("Error: Failed to parse commitment '{}'", s.trim());
+                    None
+                }
+            }
         })
         .collect();
-    
-    println!(" Shares to verify: {}", share_list.len());
-    println!(" Commitments: {}", commitment_list.len());
-        println!("Parameters:");
-        println!("  p = {}", p);
-        println!("  q = {}", q);
-        println!(" g = {}", g);
+
+    if commitment_list.is_empty() {
+        eprintln!("Error: No valid commitments provided. Exiting.");
+        return;
+    }
+
+    println!("Shares to verify: {}", share_list.len());
+    println!("Commitments: {}", commitment_list.len());
+    println!("Parameters:");
+    println!("  p = {}", p);
+    println!("  q = {}", q);
+    println!("  g = {}", g);
 
     let mut all_valid = true;
     for (idx, (x, y)) in share_list.iter().enumerate() {
         println!("Share {}", idx + 1);
-        println!("x = {}, y= {}", x,y);
-        
+        println!("x = {}, y = {}", x, y);
+
         if verbose {
             verify_share_verbose(x, y, &commitment_list, &g, &p, &q);
         }
-        
+
         let is_valid = feldman::verify_share(x, y, &commitment_list, &g, &p, &q);
-        
+
         if is_valid {
             println!("VALID - This share is correct and can be used for reconstruction");
         } else {
@@ -57,6 +82,7 @@ pub fn execute(share: String, commitments: String, verbose: bool) {
             all_valid = false;
         }
     }
+
     if all_valid {
         println!("║ All shares are valid and can be used for secret reconstruction.");
     } else {
@@ -64,31 +90,35 @@ pub fn execute(share: String, commitments: String, verbose: bool) {
     }
 }
 
-fn verify_share_verbose(x: &BigUint,y: &BigUint,commitments: &[BigUint],g: &BigUint,p: &BigUint,q: &BigUint,) {
+fn verify_share_verbose(
+    x: &BigUint,
+    y: &BigUint,
+    commitments: &[BigUint],
+    g: &BigUint,
+    p: &BigUint,
+    _q: &BigUint,
+) {
     let left_side = g.modpow(y, p);
     println!("│  Left side:  g^y mod p");
     println!("{}^{} mod {}", g, y, p);
     println!("= {}", left_side);
-    
+
     println!("│  Right side: ∏ C[j]^(x^j) mod p");
-    
+
     let mut right_side = BigUint::one();
     let mut x_power = BigUint::one();
-    
+
     for (j, commitment) in commitments.iter().enumerate() {
         println!("│    Step {}: x^{} = {}", j, j, x_power);
         let term = commitment.modpow(&x_power, p);
-        println!("│            C[{}]^(x^{}) mod p", j, j);
-        println!("│            = {}^{} mod p", commitment, x_power);
-        println!("│            = {}", term);
-        right_side = (right_side * term) % p; 
+        println!("│            C[{}]^(x^{}) mod p = {}", j, j, term);
+        right_side = (right_side * term) % p;
         println!("│            Running product = {}", right_side);
-        x_power = x_power * x;
+        x_power = &x_power * x;
     }
-    
-    println!(" Comparison:");
+
+    println!("Comparison:");
     println!("   Left  = {}", left_side);
     println!("   Right = {}", right_side);
     println!("   Match = {}", left_side == right_side);
-
 }

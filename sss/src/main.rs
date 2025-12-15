@@ -1,17 +1,14 @@
-use clap::{Parser};
+use clap::Parser;
 mod helper;
 use helper::secret_generation;
 mod models;
 use models::{Args, Commands};
 mod reconstruction;
-use reconstruction::{reconstruct_secret::reconstruct_secret};
+use reconstruction::reconstruct_secret::reconstruct_secret;
 use secret_generation::{string_to_biguint, biguint_to_string};
 use num_bigint::BigUint;
-
 mod polynomial;
-use polynomial::{
-    generate_shares::generate_shares
-};
+use polynomial::generate_shares::generate_shares;
 
 fn main() {
     let args = Args::parse();
@@ -22,23 +19,24 @@ fn main() {
             let prime = BigUint::from(p);
 
             if secret_num >= prime {
-                eprintln!("Secret must be smaller than prime");
+                eprintln!("Error: Secret must be smaller than prime");
                 std::process::exit(1);
             }
 
             let shares = generate_shares(&secret_num, n, k, &prime);
 
-            println!("\nGenerated Shares");
+            println!("\nGenerated Shares:");
             for (i, (x, y)) in shares.iter().enumerate() {
                 println!("Share {} -> x: {}, y: {}", i + 1, x, y);
             }
 
-            let cli_format: Vec<String> =
-                shares.iter().map(|(x, y)| format!("{},{}", x, y)).collect();
-
+            let cli_format: Vec<String> = shares
+                .iter()
+                .map(|(x, y)| format!("{},{}", x, y))
+                .collect();
             let cli_string = cli_format.join(";");
 
-            println!("\nCLI Ready Format");
+            println!("\nCLI Ready Format:");
             println!("--shares \"{}\"", cli_string);
         }
 
@@ -52,19 +50,44 @@ fn main() {
                     continue;
                 }
                 let parts: Vec<&str> = s.split(',').collect();
-                let x = BigUint::parse_bytes(parts[0].trim().as_bytes(), 10).unwrap();
-                let y = BigUint::parse_bytes(parts[1].trim().as_bytes(), 10).unwrap();
+                if parts.len() != 2 {
+                    eprintln!("Error: Each share must be in format 'x,y'. Got '{}'", s);
+                    continue;
+                }
+
+                let x = match BigUint::parse_bytes(parts[0].trim().as_bytes(), 10) {
+                    Some(val) => val,
+                    None => {
+                        eprintln!("Error: Failed to parse x coordinate '{}'", parts[0]);
+                        continue;
+                    }
+                };
+
+                let y = match BigUint::parse_bytes(parts[1].trim().as_bytes(), 10) {
+                    Some(val) => val,
+                    None => {
+                        eprintln!("Error: Failed to parse y coordinate '{}'", parts[1]);
+                        continue;
+                    }
+                };
+
                 shares_vec.push((x, y));
+            }
+
+            if shares_vec.is_empty() {
+                eprintln!("Error: No valid shares provided for reconstruction");
+                std::process::exit(1);
             }
 
             let secret_num = reconstruct_secret(&shares_vec, &p);
             let secret_str = biguint_to_string(&secret_num);
 
-            println!("\nGiven Shares");
+            println!("\nGiven Shares:");
             for (i, (x, y)) in shares_vec.iter().enumerate() {
                 println!("Share {} -> x: {}, y: {}", i + 1, x, y);
             }
-            println!("\nThe Reconstructed String is : {}", secret_str);
+
+            println!("\nThe Reconstructed String is: {}", secret_str);
         }
     }
 }

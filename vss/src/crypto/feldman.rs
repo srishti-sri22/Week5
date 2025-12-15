@@ -14,7 +14,7 @@ pub fn generate_commitments(coeffs: &[BigUint], g: &BigUint, p: &BigUint) -> Vec
 /// g^y ≡ C[0]^(x^0) * C[1]^(x^1) * C[2]^(x^2) * ... (mod p)
 /// g^y ≡ C[0] * C[1]^x * C[2]^(x^2) * C[3]^(x^3) * ... (mod p)
 
-pub fn verify_share(x: &BigUint,y: &BigUint,commitments: &[BigUint],g: &BigUint,p: &BigUint,q: &BigUint) -> bool {
+pub fn verify_share(x: &BigUint,y: &BigUint,commitments: &[BigUint],g: &BigUint,p: &BigUint,_q: &BigUint) -> bool {
     let left_side = g.modpow(y, p);
 
     let mut right_side = BigUint::one();
